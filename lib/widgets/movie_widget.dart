@@ -80,10 +80,13 @@ class MovieWidget extends StatelessWidget {
                         children: [
                           Hero(
                             tag: movieState.movies[index].id,
-                            child: CachedNetworkImage(
-                                placeholder: (context, url) =>  Center(child: LoadingUI()),
-                                errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', fit: BoxFit.fitHeight,),
-                                imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${movieState.movies[index].poster_path}'),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CachedNetworkImage(
+                                  placeholder: (context, url) =>  Center(child: LoadingUI()),
+                                  errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', fit: BoxFit.fitHeight,),
+                                  imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${movieState.movies[index].poster_path}'),
+                            ),
                           ),
                           Positioned(
                               right: 6,
@@ -92,9 +95,11 @@ class MovieWidget extends StatelessWidget {
                                 child: Column(
                                   children: [
                                     Icon(Icons.star, color: Colors.yellow[900],),
-                                    Text(movieState.movies[index].vote_average, style: const TextStyle(
+                                    Text(movieState.movies[index].vote_average, style:  TextStyle(
                                         color: Colors.red,
-                                        fontWeight: FontWeight.bold
+                                        fontWeight: FontWeight.bold,
+
+
                                     ),)
                                   ],
                                 ),

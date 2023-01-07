@@ -101,6 +101,7 @@ class MovieService{
       if((data as List).isEmpty){
         return [
           Movie(
+              backdrop_path: '',
               id: 0,
               title: "No Recommendations ",
               release_date: "",

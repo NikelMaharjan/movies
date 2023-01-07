@@ -2,7 +2,9 @@
 
 
 
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,7 +45,7 @@ class DetailPage extends StatelessWidget {
           },
 
           child: Scaffold(
-              body: Consumer(   // we wrap consumer from here to show video in full screen. if not, then we can wrap where needed only like recommendation section, video section
+              body: Consumer(   // we wrap consumer from here to show video in full screen from detail page itself. if not, then we can wrap where needed only like recommendation section, video section
                 builder: (context, ref, child){
                   final videoData = ref.watch(videoProvider(movie.id));
                   final recommendedMovie = ref.watch(recommendationProvider(movie.id));
@@ -65,7 +67,6 @@ class DetailPage extends StatelessWidget {
                             );
                           },
                           error: (err, stack) => Center(child: Text('$err'),),
-                          //  error: (err, stack) => Center(child: Text(err as String),),
                           loading: () =>  Center(child: LoadingUI(),)),
 
                     );
@@ -79,76 +80,97 @@ class DetailPage extends StatelessWidget {
                             child:  Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+
+
                                 movieTitle(),
+
+
                                 movieOverview(),
-                                homeIcon(),
-                                recommendMovie(recommendedMovie, ref),
-                                Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 10),
-                                  child: const Text("Videos", style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16
-                                  ),),
-                                ),
-                                videoData.when(
-                                    data: (data){
-                                      return  data[0].key.isEmpty ? Text(data[0].name) :  SizedBox(
-                                        height: deviceheight*0.3,
-                                        child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
+
+
+                                ExpansionTile(
+                                  initiallyExpanded: true,
+                                  collapsedTextColor: Colors.black,
+                                  textColor: Colors.black,
+                                  iconColor: Colors.black,
+                                  title: const Text("Recommendation"), children: [
+                                  recommendMovie(recommendedMovie, ref),
+
+                                ],),
+
+
+                                
+                                ExpansionTile(
+                                  collapsedTextColor: Colors.black,
+                                  textColor: Colors.black,
+                                  iconColor: Colors.black,
+
+                                  title: const Text("Videos"), children: [
+
+                                  videoData.when(
+                                      data: (data){
+                                        return  data[0].key.isEmpty ? Text(data[0].name) :  ListView.builder(
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            scrollDirection: Axis.vertical,
                                             itemCount: data.length,
                                             itemBuilder: (context, index){
-                                              return SizedBox(
-                                                width: 300,
-                                                child: Card(
-                                                  color: Colors.grey[350],
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    children: [
-                                                      InkWell(
-                                                        onTap: (){
-                                                          Get.to(() => VideoPage(data[index]), transition: Transition.leftToRight);
-                                                        },
-                                                        child: Padding(
-                                                          padding: const EdgeInsets.all(8.0),
-                                                          child: SizedBox(
-                                                              height: deviceheight*0.06,
-                                                              child: Text(data[index].name)),
-                                                        ),
-                                                      ),
-                                                      YoutubePlayer(
-                                                        controller: YoutubePlayerController(
-                                                          initialVideoId: data[index].key,
-                                                          flags: const YoutubePlayerFlags(
-                                                            autoPlay: false,
+                                              return Card(
+                                                color: Colors.grey[350],
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    InkWell(
+                                                      onTap: (){
+                                                        Get.to(() => VideoPage(data[index]), transition: Transition.leftToRight);
+                                                      },
+                                                      child: Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.all(12.0),
+                                                              child: Text(data[index].name),
+                                                            ),
                                                           ),
-                                                        ),
-                                                        // showVideoProgressIndicator: true,
+                                                          const Icon(Icons.navigate_next),
+                                                        ],
                                                       ),
+                                                    ),
+                                                    // YoutubePlayer(
+                                                    //   controller: YoutubePlayerController(
+                                                    //     initialVideoId: data[index].key,
+                                                    //     flags: const YoutubePlayerFlags(
+                                                    //       autoPlay: false,
+                                                    //     ),
+                                                    //   ),
+                                                    //   // showVideoProgressIndicator: true,
+                                                    // ),
 
-                                                    ],
-                                                  ),
+                                                  ],
                                                 ),
                                               );
-                                            }),
-                                      );
-                                    },
-                                    error: (err, stack) => SizedBox(
-                                        height: deviceheight*0.2,
-                                        child: Center(child: Column(
-                                          children: [
-                                            Text("$err"),
-                                            OutlinedButton(
-                                                style: OutlinedButton.styleFrom(
-                                                    foregroundColor: Colors.black
-                                                ),
-                                                onPressed: (){ref.refresh(videoProvider(movie.id));}, child: const Text("Retry"))
-                                          ],
-                                        ),)),
-                                    loading: () => SizedBox(
-                                       // height: deviceheight*0.08,
-                                        child:  Center(child: LoadingUI())))
+                                            });
+                                      },
+                                      error: (err, stack) => SizedBox(
+                                          height: deviceheight*0.2,
+                                          child: Center(child: Column(
+                                            children: [
+                                              Text("$err"),
+                                              OutlinedButton(
+                                                  style: OutlinedButton.styleFrom(
+                                                      foregroundColor: Colors.black
+                                                  ),
+                                                  onPressed: (){ref.refresh(videoProvider(movie.id));}, child: const Text("Retry"))
+                                            ],
+                                          ),)),
+                                      loading: () => SizedBox(
+                                        // height: deviceheight*0.08,
+                                          child:  Center(child: LoadingUI())))
+
+                                ],),
+
+
 
                               ], )
                         ),
@@ -171,6 +193,7 @@ class DetailPage extends StatelessWidget {
           return  data[0].id == 0 ? Text(data[0].title,) :  SizedBox(
             height: deviceheight*0.192,
             child: ListView.builder(
+              physics: const BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 itemCount: data.length,
                 itemBuilder: (context, index){
@@ -186,12 +209,16 @@ class DetailPage extends StatelessWidget {
                           child: Stack(
                               children:[ Hero(
                                 tag: data[index].title,
-                                child: CachedNetworkImage(
-                                  placeholder: (context, url) => SizedBox(
-                                      height: deviceheight*0.1787,
-                                      child:  Center(child: LoadingUI())),
-                                  errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', height: deviceheight*0.1787, fit: BoxFit.fitHeight,),
-                                  imageUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/${data[index].poster_path}" , width: 100,),),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+
+                                  child: CachedNetworkImage(
+                                    placeholder: (context, url) => SizedBox(
+                                        height: deviceheight*0.1787,
+                                        child:  Center(child: LoadingUI())),
+                                    errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', height: deviceheight*0.1787, fit: BoxFit.fitHeight,),
+                                    imageUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/${data[index].poster_path}" , width: 100,),
+                                ),),
 
                                 Positioned(
                                     right: 6,
@@ -227,7 +254,7 @@ class DetailPage extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black
                     ),
-                    onPressed: (){ref.refresh(recommendationProvider(movie.id));}, child: Text("Refresh"))
+                    onPressed: (){ref.refresh(recommendationProvider(movie.id));}, child: const Text("Refresh"))
               ],
             ),)),
         loading: () => SizedBox(
@@ -258,14 +285,17 @@ class DetailPage extends StatelessWidget {
   }
 
   Widget movieOverview() {
-    return Card(
-      color: Colors.grey[350],
-      child: SizedBox(
-          height: deviceheight*0.28,
-          child: Center(child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(movie.overview, style: const TextStyle(fontSize: 15),),
-          ))),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 22),
+      child: Card(
+        color: Colors.grey[350],
+        child: SizedBox(
+            height: deviceheight*0.32,
+            child: Center(child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(movie.overview, style: const TextStyle(fontSize: 18),),
+            ))),
+      ),
     );
   }
 
@@ -273,18 +303,21 @@ class DetailPage extends StatelessWidget {
     return SizedBox(
       height: deviceheight*0.30,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Hero(
-              tag: movie.id,
-              child: SizedBox(
-                height: deviceheight*0.30,
-                width: devicewidth*0.4,
-                child: CachedNetworkImage(
-                    errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', height: deviceheight*0.30, width: devicewidth*0.30, fit: BoxFit.fitHeight,),
-                    imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${movie.poster_path}'),
-              )),
+          SizedBox(
+            width: 180,
+            child: Hero(
+                tag: movie.id,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    placeholder: (context, url) => LoadingUI(),
+
+                    errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', fit: BoxFit.fitWidth,),
+                      imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${movie.backdrop_path}', fit: BoxFit.fitWidth,),
+                )),
+          ),
           Expanded(
             child: Card(
               color: Colors.grey[350],
@@ -296,12 +329,12 @@ class DetailPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(movie.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                      Text(movie.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                       Row(
                         children: [
-                          const Icon(Icons.date_range, size: 20, color: Colors.brown,),
+                          const Icon(CupertinoIcons.calendar, size: 18, color: Colors.brown,),
                           const SizedBox(width: 14,),
-                          Text(movie.release_date, style: const TextStyle(fontSize: 16,),),
+                          Text(movie.release_date, style: const TextStyle(fontSize: 14,),),
                         ],
                       ),
                       Row(
