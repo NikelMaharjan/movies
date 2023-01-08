@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:movie_app_tabbar/common/loading_ui.dart';
+import 'package:movie_app_tabbar/models/videos.dart';
 import 'package:movie_app_tabbar/provider/video_provider.dart';
 import 'package:movie_app_tabbar/views/video_page.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -75,105 +76,44 @@ class DetailPage extends StatelessWidget {
                     return SafeArea(
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
-                        child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child:  Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
 
 
-                                movieTitle(),
+                            _coverImage(),
 
 
-                                movieOverview(),
+                            _movieTitle(),
+
+                            _divider(),
 
 
-                                ExpansionTile(
-                                  initiallyExpanded: true,
-                                  collapsedTextColor: Colors.black,
-                                  textColor: Colors.black,
-                                  iconColor: Colors.black,
-                                  title: const Text("Recommendation"), children: [
-                                  recommendMovie(recommendedMovie, ref),
+                            _movieOverview(),
 
-                                ],),
-
-
-                                
-                                ExpansionTile(
-                                  collapsedTextColor: Colors.black,
-                                  textColor: Colors.black,
-                                  iconColor: Colors.black,
-
-                                  title: const Text("Videos"), children: [
-
-                                  videoData.when(
-                                      data: (data){
-                                        return  data[0].key.isEmpty ? Text(data[0].name) :  ListView.builder(
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            scrollDirection: Axis.vertical,
-                                            itemCount: data.length,
-                                            itemBuilder: (context, index){
-                                              return Card(
-                                                color: Colors.grey[350],
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    InkWell(
-                                                      onTap: (){
-                                                        Get.to(() => VideoPage(data[index]), transition: Transition.leftToRight);
-                                                      },
-                                                      child: Row(
-                                                        children: [
-                                                          Expanded(
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.all(12.0),
-                                                              child: Text(data[index].name),
-                                                            ),
-                                                          ),
-                                                          const Icon(Icons.navigate_next),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    // YoutubePlayer(
-                                                    //   controller: YoutubePlayerController(
-                                                    //     initialVideoId: data[index].key,
-                                                    //     flags: const YoutubePlayerFlags(
-                                                    //       autoPlay: false,
-                                                    //     ),
-                                                    //   ),
-                                                    //   // showVideoProgressIndicator: true,
-                                                    // ),
-
-                                                  ],
-                                                ),
-                                              );
-                                            });
-                                      },
-                                      error: (err, stack) => SizedBox(
-                                          height: deviceheight*0.2,
-                                          child: Center(child: Column(
-                                            children: [
-                                              Text("$err"),
-                                              OutlinedButton(
-                                                  style: OutlinedButton.styleFrom(
-                                                      foregroundColor: Colors.black
-                                                  ),
-                                                  onPressed: (){ref.refresh(videoProvider(movie.id));}, child: const Text("Retry"))
-                                            ],
-                                          ),)),
-                                      loading: () => SizedBox(
-                                        // height: deviceheight*0.08,
-                                          child:  Center(child: LoadingUI())))
-
-                                ],),
+                            _divider(),
 
 
 
-                              ], )
-                        ),
+
+
+
+
+
+
+
+
+
+                            _movieRecommendiation(recommendedMovie, ref),
+
+
+
+
+                            _movieVideos(videoData, ref),
+
+
+
+                          ], ),
                       ),
                     );}
 
@@ -187,60 +127,175 @@ class DetailPage extends StatelessWidget {
     );
   }
 
+  Container _divider() {
+    return Container(
+                            margin: EdgeInsets.only(bottom: 20, top: 20),
+                            width: double.infinity, color: Colors.grey[350], height: 20,);
+  }
+
+  ExpansionTile _movieVideos(AsyncValue<List<Video>> videoData, WidgetRef ref) {
+    return ExpansionTile(
+                            collapsedTextColor: Colors.black,
+                            textColor: Colors.black,
+                            iconColor: Colors.black,
+
+                            title: const Text("Videos"), children: [
+
+                            videoData.when(
+                                data: (data){
+                                  return  data[0].key.isEmpty ? Text(data[0].name) :  ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      scrollDirection: Axis.vertical,
+                                      itemCount: data.length,
+                                      itemBuilder: (context, index){
+                                        return Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            InkWell(
+                                              onTap: (){
+                                                Get.to(() => VideoPage(data[index]), transition: Transition.leftToRight);
+                                              },
+                                              child: ListTile(
+
+                                                title: Text(data[index].name, style: TextStyle(fontSize: 14),),
+                                                trailing: Icon(Icons.navigate_next),
+                                              ),
+                                            ),
+                                            //   controller: YoutubePlayerController(
+                                            //     initialVideoId: data[index].key,
+                                            //     flags: const YoutubePlayerFlags(
+                                            //       autoPlay: false,
+                                            //     ),
+                                            //   ),
+                                            //   // showVideoProgressIndicator: true,
+                                            // ), // YoutubePlayer(
+
+
+                                          ],
+                                        );
+                                      });
+                                },
+                                error: (err, stack) => SizedBox(
+                                    height: deviceheight*0.2,
+                                    child: Center(child: Column(
+                                      children: [
+                                        Text("$err"),
+                                        OutlinedButton(
+                                            style: OutlinedButton.styleFrom(
+                                                foregroundColor: Colors.black
+                                            ),
+                                            onPressed: (){ref.refresh(videoProvider(movie.id));}, child: const Text("Retry"))
+                                      ],
+                                    ),)),
+                                loading: () => SizedBox(
+                                  // height: deviceheight*0.08,
+                                    child:  Center(child: LoadingUI())))
+
+                          ],);
+  }
+
+  ExpansionTile _movieRecommendiation(AsyncValue<List<Movie>> recommendedMovie, WidgetRef ref) {
+    return ExpansionTile(
+                            initiallyExpanded: true,
+                            collapsedTextColor: Colors.black,
+                            textColor: Colors.black,
+                            iconColor: Colors.black,
+                            title: const Text("Recommendation"), children: [
+                            recommendMovie(recommendedMovie, ref),
+
+                          ],
+                          );
+  }
+
+  ExpansionTile _movieTitle() {
+    return ExpansionTile(
+                            childrenPadding: EdgeInsets.only(left: 18, bottom: 10, top: 10),
+                            initiallyExpanded: true,
+                            collapsedTextColor: Colors.black,
+                            textColor: Colors.black,
+                            iconColor: Colors.black,
+                            title:  Text(movie.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),), children: [
+
+
+
+
+
+                              _buildMovieDetails(text: movie.release_date, icon: Icons.date_range),
+                              _buildMovieDetails(text: movie.popularity, icon: CupertinoIcons.person_3),
+                              _buildMovieDetails(text: movie.vote_average, icon: CupertinoIcons.star_circle_fill),
+
+
+
+                          ],
+                          );
+  }
+
+  Widget _buildMovieDetails({required String text, required IconData icon}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Icon(icon),
+        SizedBox(width: 10,),
+        Text(text)
+      ],
+    );
+  }
+
   Widget recommendMovie(AsyncValue<List<Movie>> recommendedMovie, WidgetRef ref) {
     return recommendedMovie.when(
         data: (data){
-          return  data[0].id == 0 ? Text(data[0].title,) :  SizedBox(
+          return  data[0].id == 0 ? Container(
+            margin: const EdgeInsets.only(bottom: 18.0),
+            child: Text(data[0].title,),
+          ) :  SizedBox(
             height: deviceheight*0.192,
             child: ListView.builder(
               physics: const BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 itemCount: data.length,
                 itemBuilder: (context, index){
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      InkWell(
-                        onTap: (){
-                          Get.to(() => DetailPage(data[index]), transition: Transition.leftToRight, preventDuplicates: false);
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          child: Stack(
-                              children:[ Hero(
-                                tag: data[index].title,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
+                  return InkWell(
+                    onTap: (){
+                      Get.to(() => DetailPage(data[index]), transition: Transition.leftToRight, preventDuplicates: false);
+                    },
+                    child: Container(
+                      margin:  EdgeInsets.only(right: 8, left: index == 0 ? 10 : 0),
+                      child: Stack(
+                          children:[
+                            Hero(
+                             tag: data[index].title,
+                             child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
 
-                                  child: CachedNetworkImage(
-                                    placeholder: (context, url) => SizedBox(
-                                        height: deviceheight*0.1787,
-                                        child:  Center(child: LoadingUI())),
-                                    errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', height: deviceheight*0.1787, fit: BoxFit.fitHeight,),
-                                    imageUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/${data[index].poster_path}" , width: 100,),
-                                ),),
+                              child: CachedNetworkImage(
+                                placeholder: (context, url) => SizedBox(
+                                    height: deviceheight*0.1787,
+                                    child:  Center(child: LoadingUI())),
+                                errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', height: deviceheight*0.1787, fit: BoxFit.fitHeight,),
+                                imageUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/${data[index].poster_path}" , width: 100,),
+                            ),),
 
-                                Positioned(
-                                    right: 6,
-                                    child: Container(
-                                      width: 20,
-                                      color: Colors.grey[300],
-                                      child: Column(
-                                        children: [
-                                          Icon(Icons.star, color: Colors.yellow[900], size: 12,),
-                                          Text(data[index].vote_average.substring(0,3), style: const TextStyle(
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12
+                            Positioned(
+                                right: 6,
+                                child: Container(
+                                  width: 20,
+                                  color: Colors.grey[300],
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.star, color: Colors.yellow[900], size: 12,),
+                                      Text(data[index].vote_average.substring(0,3), style: const TextStyle(
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12
 
-                                          ),)
-                                        ],
-                                      ),
-                                    ))
-                              ] ),
-                        ),
-                      ),
-                    ],
+                                      ),)
+                                    ],
+                                  ),
+                                ))
+                          ] ),
+                    ),
                   );
                 }),
           );
@@ -284,78 +339,45 @@ class DetailPage extends StatelessWidget {
     );
   }
 
-  Widget movieOverview() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 22),
-      child: Card(
-        color: Colors.grey[350],
-        child: SizedBox(
-            height: deviceheight*0.32,
-            child: Center(child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(movie.overview, style: const TextStyle(fontSize: 18),),
-            ))),
-      ),
+  Widget _movieOverview() {
+    return ExpansionTile(
+      childrenPadding: EdgeInsets.only(left: 18, bottom: 10, top: 10),
+      initiallyExpanded: true,
+      collapsedTextColor: Colors.black,
+      textColor: Colors.black,
+      iconColor: Colors.black,
+      title:  Text("Summary"), children: [
+        
+        
+        Text(movie.overview, style: TextStyle(fontSize: 16),)
+        
+        
+        
+        
+
+
+
+    ],
     );
   }
 
-  Widget movieTitle() {
+  Widget _coverImage() {
     return SizedBox(
-      height: deviceheight*0.30,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          SizedBox(
-            width: 180,
-            child: Hero(
-                tag: movie.id,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    placeholder: (context, url) => LoadingUI(),
+      height: deviceheight*0.34,
+      child: SizedBox(
+        width: double.infinity,
+        child: Hero(
+            tag: movie.id,
+            child: CachedNetworkImage(
+              placeholder: (context, url) => LoadingUI(),
 
-                    errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', fit: BoxFit.fitWidth,),
-                      imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${movie.backdrop_path}', fit: BoxFit.fitWidth,),
-                )),
-          ),
-          Expanded(
-            child: Card(
-              color: Colors.grey[350],
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(
-                  height: deviceheight*0.18,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(movie.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      Row(
-                        children: [
-                          const Icon(CupertinoIcons.calendar, size: 18, color: Colors.brown,),
-                          const SizedBox(width: 14,),
-                          Text(movie.release_date, style: const TextStyle(fontSize: 14,),),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Icon(Icons.star, size: 20, color: Colors.yellow[900],),
-                          Text(movie.vote_average, style: const TextStyle(fontSize: 14,),),
-                          const SizedBox(width: 28,),
-                          Icon(Icons.stacked_line_chart, size: 20, color: Colors.yellow[900],),
-                          Text(movie.popularity, style: const TextStyle(fontSize: 14,),),
-
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          )
-        ],
+              errorWidget: (context, url, error) => Image.asset('assets/images/noimage.jpg', fit: BoxFit.fitWidth,),
+              imageUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${movie.backdrop_path}', fit: BoxFit.cover,)),
       ),
     );
+
   }
+
+
+
 }
